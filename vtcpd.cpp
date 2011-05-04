@@ -155,10 +155,13 @@ int main (int argc, char *argv [])
             }
             assert (rc == sizeof (uint32_t));
             subport = ntohl (subport);
+
+            //  If the subport is not bound, we'll simply close
+            //  the connection causing the connecting party to receive error.
             registrations_t::iterator it = registrations.find (subport);
             if (it == registrations.end ()) {
-                printf ("subport does not exist\n");
-                exit (1);
+                close (fd);
+                continue;
             }
 
             //  We are going to pass the file descriptor. Thus we'll use 
@@ -241,8 +244,16 @@ close_connection:
                 uint32_t subport = ntohl (subp);
                 if (!registrations.insert (std::make_pair (subport,
                       pollset [i].fd)).second) {
-                    printf ("subport already in use\n");
-                    exit (1);
+
+                    //  If subport is already in use, pass the error
+                    //  to the binding party.
+                    unsigned char buf [] = {1};
+                    rc = send (pollset [i].fd, buf, 1, 0);
+                    if (rc < 0) {
+                        printf ("error in send: %s\n", strerror (errno));
+                        exit (1);
+                    }
+                    assert (rc == 1);
                 }
             }
         }

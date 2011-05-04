@@ -110,6 +110,12 @@ int vtcp_accept (int fd)
         return -1;
     assert (rc != 0);
     assert (rc == 1);
+
+    if (buf [0] == 1) {
+        errno = EADDRINUSE;
+        return -1;
+    }
+
     assert (buf [0] == 0);
 
     //  Loop over control messages to find the embedded file descriptor.
