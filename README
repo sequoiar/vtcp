@@ -1,0 +1,23 @@
+vtcp - a TCP port multiplexing layer
+------------------------------------
+
+vtcp allows you to pass TCP traffic from multiple applications though a single
+TCP port. Note that vtcp is not a tunelling solution: vtcp deamon server only
+as a rendez-vous point, the TCP traffic itself is passed directly between
+applications, vtcp deamon is not involved in any way.
+
+To use vtcp:
+
+1. Start the vtcp deamon. Specify the port you want to multiplex:
+
+    $ ./vtcpd 5555
+
+2. On the server side Bind socket to a subport, then accept new connections:
+
+    int listener = vtcp_bind (5555, 10);
+    ...
+    int fd = vtcp_accept (listener);
+
+3. On the client side, connect to the subport:
+
+    int fd = vtcp_connect (inet_addr ("127.0.0.1"), 5555, 10);
