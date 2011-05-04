@@ -48,7 +48,7 @@ int vtcp_connect (in_addr_t address, in_port_t port,
     }
 
     //  Specify the subport.
-    uint32_t subp = htons (subport);
+    uint32_t subp = htonl (subport);
     rc = send (s, &subp, sizeof (subp), 0);
     if (rc < 0) {
         close (s);
@@ -80,7 +80,7 @@ int vtcp_bind (in_port_t port, vtcp_subport_t subport)
     }
 
     //  Specify the subport.
-    uint32_t subp = htons (subport);
+    uint32_t subp = htonl (subport);
     rc = send (s, &subp, sizeof (subp), 0);
     if (rc < 0) {
         close (s);

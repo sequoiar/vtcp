@@ -144,10 +144,14 @@ int main (int argc, char *argv [])
                 exit (1);
             }
             uint32_t subport;
-            rc = recv (fd, &subport, sizeof (uint32_t), 0);
+            rc = recv (fd, &subport, sizeof (subport), 0);
             if (rc == -1) {
                 printf ("error in recv: %s\n", strerror (errno));
                 exit (1);
+            }
+            if (rc == 0) {
+                close (fd);
+                continue;
             }
             assert (rc == sizeof (uint32_t));
             subport = ntohl (subport);
@@ -205,16 +209,36 @@ int main (int argc, char *argv [])
 
         //  Check connections from apps for vtcp binds.
         for (pollset_t::size_type i = 2; i != pollset.size (); ++i) {
-            if (pollset [i].revents & POLLIN) {
-                uint32_t subport;
-                rc = recv (pollset [i].fd, &subport, sizeof (uint32_t), 0);
+            if (pollset [i].revents & POLLNVAL)
+                assert (false);
+            else if (pollset [i].revents & POLLERR)
+                goto close_connection;
+            else if (pollset [i].revents & POLLHUP)
+                goto close_connection;
+            else if (pollset [i].revents & POLLIN) {
+                uint32_t subp;
+                rc = recv (pollset [i].fd, &subp, sizeof (subp), 0);
                 if (rc == -1) {
                     printf ("error in recv: %s\n", strerror (errno));
                     exit (1);
                 }
-                assert (rc != 0);
+                if (rc == 0) {
+close_connection:
+                    close (pollset [i].fd);
+                    for (registrations_t::iterator it = registrations.begin ();
+                          it != registrations.end (); ++it) {
+                        if (it->second == pollset [i].fd) {
+                            registrations_t::iterator o = it;
+                            --o;
+                            registrations.erase (it);
+                            it = o;
+                        }
+                    }
+                    connections.erase (pollset [i].fd);
+                    break;
+                }
                 assert (rc == sizeof (uint32_t));
-                subport = ntohl (subport);
+                uint32_t subport = ntohl (subp);
                 if (!registrations.insert (std::make_pair (subport,
                       pollset [i].fd)).second) {
                     printf ("subport already in use\n");
