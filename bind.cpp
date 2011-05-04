@@ -23,7 +23,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "vtcp.hpp"
+#include "vtcp.h"
 
 int main (int argc, char *argv [])
 {

@@ -17,19 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
 #include <unistd.h>
 #include <assert.h>
 #include <stdio.h>
 #include <errno.h>
 
 #include <sys/socket.h>
-#include <arpa/inet.h>
 #include <sys/un.h>
 
-typedef uint32_t vtcp_subport_t;
+#include "vtcp.h"
 
-inline int vtcp_connect (in_addr_t address, in_port_t port,
+int vtcp_connect (in_addr_t address, in_port_t port,
     vtcp_subport_t subport)
 {
     //  Open the TCP socket.
@@ -61,7 +59,7 @@ inline int vtcp_connect (in_addr_t address, in_port_t port,
     return s;
 }
 
-inline int vtcp_bind (in_port_t port, vtcp_subport_t subport)
+int vtcp_bind (in_port_t port, vtcp_subport_t subport)
 {
     //  Convert port into IPC filename.
     char ipc [32];
@@ -93,7 +91,7 @@ inline int vtcp_bind (in_port_t port, vtcp_subport_t subport)
     return s;
 }
 
-inline int vtcp_accept (int fd)
+int vtcp_accept (int fd)
 {
     //  Wait for new connection, i.e. read a message from vtcp daemon.
     unsigned char buf [1];
@@ -123,3 +121,4 @@ inline int vtcp_accept (int fd)
     }
     assert (false);
 }
+

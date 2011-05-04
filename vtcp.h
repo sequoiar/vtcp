@@ -17,36 +17,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
-#include <unistd.h>
+#ifndef __VTCP_H_INCLUDED__
+#define __VTCP_H_INCLUDED__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdint.h>
 
 #include <arpa/inet.h>
 
-#include "vtcp.h"
+typedef uint32_t vtcp_subport_t;
 
-int main (int argc, char *argv [])
-{
-    //  Parse the command line arguments.
-    if (argc != 4) {
-        printf ("usage: connect <address> <port> <subport>\n");
-        return 1;
-    }
-    in_addr_t addr = inet_addr (argv [1]);
-    int port = atoi (argv [2]);
-    int subport = atoi (argv [3]);
+int vtcp_connect (in_addr_t address, in_port_t port, vtcp_subport_t subport);
+int vtcp_bind (in_port_t port, vtcp_subport_t subport);
+int vtcp_accept (int fd);
 
-    int fd = vtcp_connect (addr, port, subport);
-    if (fd < 0) {
-        printf ("error in vtcp_connect: %s\n", strerror (errno));
-        exit (1);
-    }
-
-    sleep (3600);
-
-    close (fd);
-
-    return 0;
+#ifdef __cplusplus
 }
+#endif
+
+#endif
+
